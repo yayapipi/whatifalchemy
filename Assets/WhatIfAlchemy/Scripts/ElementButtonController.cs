@@ -1,6 +1,7 @@
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.EventSystems;
+using TMPro;
 
 /// <summary>
 /// 元素按鈕控制器，負責處理 UI 按鈕的懸停顯示和點擊生成功能
@@ -19,12 +20,19 @@ public class ElementButtonController : MonoBehaviour, IPointerEnterHandler, IPoi
     [SerializeField] private float hoverScale = 1.2f;
     [SerializeField] private float hoverFadeTime = 0.2f;
     
+    [Header("懸停文字顯示")]
+    [SerializeField] private TextMeshProUGUI hoverText;
+    
     [Header("生成設定")]
     [SerializeField] private GameObject elementViewPrefab;
     [SerializeField] private Transform spawnParent;
     [SerializeField] private Vector3 spawnOffset = Vector3.zero;
     [SerializeField] private bool autoStartDrag = true;
     [SerializeField] private bool generateOnDrag = true;
+    
+    [Header("元素初始化設定")]
+    [SerializeField] private Sprite elementSprite;
+    [SerializeField] private string elementName = "New Element";
     
     [Header("拖拽視覺效果")]
     [SerializeField] private float dragTransparency = 0.5f;
@@ -130,6 +138,12 @@ public class ElementButtonController : MonoBehaviour, IPointerEnterHandler, IPoi
         
         isHovering = true;
         ShowHoverDisplay();
+        
+        // 設定懸停文字
+        if (hoverText != null)
+        {
+            hoverText.text = elementName;
+        }
     }
     
     /// <summary>
@@ -291,6 +305,9 @@ public class ElementButtonController : MonoBehaviour, IPointerEnterHandler, IPoi
             return null;
         }
         
+        // 初始化 ElementView 的 Sprite 和 ElementName
+        InitializeElementView(elementView);
+        
         // 自動開始拖拽
         if (autoStartDrag)
         {
@@ -302,6 +319,33 @@ public class ElementButtonController : MonoBehaviour, IPointerEnterHandler, IPoi
         
         Debug.Log($"生成了新的元素: {spawnedObject.name}");
         return elementView;
+    }
+    
+    /// <summary>
+    /// 初始化 ElementView 的 Sprite 和 ElementName
+    /// </summary>
+    private void InitializeElementView(ElementView elementView)
+    {
+        // 設定元素名稱
+        elementView.SetElementName(elementName);
+        
+        // 設定 Sprite
+        if (elementSprite != null)
+        {
+            SpriteRenderer spriteRenderer = elementView.GetComponent<SpriteRenderer>();
+            if (spriteRenderer != null)
+            {
+                spriteRenderer.sprite = elementSprite;
+            }
+            else
+            {
+                Debug.LogWarning($"ElementView {elementView.name} 沒有 SpriteRenderer 組件，無法設定 Sprite！");
+            }
+        }
+        else
+        {
+            Debug.LogWarning("沒有設定 elementSprite，使用預設 Sprite");
+        }
     }
     
     /// <summary>
@@ -398,6 +442,38 @@ public class ElementButtonController : MonoBehaviour, IPointerEnterHandler, IPoi
     public void SetDragFadeTime(float fadeTime)
     {
         dragFadeTime = Mathf.Max(0f, fadeTime);
+    }
+    
+    /// <summary>
+    /// 設定元素 Sprite
+    /// </summary>
+    public void SetElementSprite(Sprite sprite)
+    {
+        elementSprite = sprite;
+    }
+    
+    /// <summary>
+    /// 設定元素名稱
+    /// </summary>
+    public void SetElementName(string name)
+    {
+        elementName = name;
+    }
+    
+    /// <summary>
+    /// 獲取元素名稱
+    /// </summary>
+    public string GetElementName()
+    {
+        return elementName;
+    }
+    
+    /// <summary>
+    /// 獲取元素 Sprite
+    /// </summary>
+    public Sprite GetElementSprite()
+    {
+        return elementSprite;
     }
     
     /// <summary>

@@ -25,6 +25,7 @@ public class ElementView : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndD
     [SerializeField] private float overlapScale = 1.2f;
     [SerializeField] private float overlapFadeTime = 0.3f;
     
+    
     // 私有變數
     private Vector3 originalPosition;
     private Vector3 originalScale;
@@ -135,6 +136,18 @@ public class ElementView : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndD
         
         isDragging = false;
         
+        // 檢查是否與其他元素重疊
+        ElementView overlappedElement = CheckForOverlapOnEndDrag();
+        
+        // 如果與其他元素重疊，嘗試合併
+        if (overlappedElement != null)
+        {
+            if (ElementMergeManager.TryMergeElements(this, overlappedElement))
+            {
+                return; // 合併成功，直接返回
+            }
+        }
+        
         // 重置重疊狀態，並恢復被重疊物件的縮放
         if (lastOverlappedElement != null)
         {
@@ -211,6 +224,30 @@ public class ElementView : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndD
     #endregion
     
     #region Collision Detection
+    
+    /// <summary>
+    /// 檢查拖拽結束時是否與其他元素重疊
+    /// </summary>
+    private ElementView CheckForOverlapOnEndDrag()
+    {
+        // 使用 OverlapCircle 檢測範圍內的碰撞體
+        Collider2D[] collidersInRange = Physics2D.OverlapCircleAll(transform.position, collisionRadius, collisionLayerMask);
+        
+        foreach (Collider2D collider in collidersInRange)
+        {
+            // 跳過自己
+            if (collider.gameObject == gameObject) continue;
+            
+            // 檢查是否有 ElementView 組件
+            ElementView otherElement = collider.GetComponent<ElementView>();
+            if (otherElement != null)
+            {
+                return otherElement;
+            }
+        }
+        
+        return null;
+    }
     
     /// <summary>
     /// 檢測與其他元素的碰撞
