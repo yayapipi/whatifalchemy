@@ -6,6 +6,9 @@ using UnityEngine.EventSystems;
 /// </summary>
 public class ElementView : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHandler, IPointerEnterHandler, IPointerExitHandler
 {
+    [Header("元素資訊")]
+    [SerializeField] private string elementName = "Unknown Element";
+    
     [Header("拖拽設定")]
     [SerializeField] private bool canDrag = true;
     [SerializeField] private bool returnToOriginalPosition = false;
@@ -19,6 +22,8 @@ public class ElementView : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndD
     [SerializeField] private Color dragColor = Color.white;
     [SerializeField] private float hoverScale = 1.05f;
     [SerializeField] private float hoverFadeTime = 0.2f;
+    [SerializeField] private float overlapScale = 1.2f;
+    [SerializeField] private float overlapFadeTime = 0.3f;
     
     // 私有變數
     private Vector3 originalPosition;
@@ -32,6 +37,8 @@ public class ElementView : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndD
     private Vector3 dragOffset;
     private int originalSortingOrder;
     private static int globalSortingOrder = 1000; // 全域排序層級計數器
+    private ElementView lastOverlappedElement; // 記錄上次重疊的元素
+    private bool isOverlapping = false; // 是否正在重疊
     
     // 事件
     public System.Action<ElementView, ElementView> OnElementCollision;
@@ -128,6 +135,18 @@ public class ElementView : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndD
         
         isDragging = false;
         
+        // 重置重疊狀態，並恢復被重疊物件的縮放
+        if (lastOverlappedElement != null)
+        {
+            lastOverlappedElement.EndOverlapScaleFromOther();
+            lastOverlappedElement = null;
+        }
+        
+        if (isOverlapping)
+        {
+            isOverlapping = false;
+        }
+        
         // 恢復視覺狀態
         if (spriteRenderer != null)
         {
@@ -201,6 +220,8 @@ public class ElementView : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndD
         // 使用 OverlapCircle 檢測範圍內的碰撞體
         collidersInRange = Physics2D.OverlapCircleAll(transform.position, collisionRadius, collisionLayerMask);
         
+        ElementView currentOverlappedElement = null;
+        
         foreach (Collider2D collider in collidersInRange)
         {
             // 跳過自己
@@ -210,12 +231,90 @@ public class ElementView : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndD
             ElementView otherElement = collider.GetComponent<ElementView>();
             if (otherElement != null)
             {
+                currentOverlappedElement = otherElement;
+                
                 // 觸發碰撞事件
                 OnElementCollision?.Invoke(this, otherElement);
                 
                 // 可以選擇是否在碰撞時停止檢測
                 // break;
             }
+        }
+        
+        // 檢查重疊狀態變化
+        CheckOverlapStateChange(currentOverlappedElement);
+    }
+    
+    /// <summary>
+    /// 檢查重疊狀態變化並輸出 Debug Log
+    /// </summary>
+    private void CheckOverlapStateChange(ElementView currentOverlappedElement)
+    {
+        // 如果當前重疊的元素與上次不同
+        if (currentOverlappedElement != lastOverlappedElement)
+        {
+            // 如果離開了之前重疊的元素，先結束其縮放效果
+            if (lastOverlappedElement != null)
+            {
+                Debug.Log($"[{elementName}] 離開重疊 [{lastOverlappedElement.elementName}]");
+                lastOverlappedElement.EndOverlapScaleFromOther();
+            }
+            
+            // 如果開始重疊新的元素，對其進行縮放
+            if (currentOverlappedElement != null)
+            {
+                Debug.Log($"[{elementName}] 開始重疊到 [{currentOverlappedElement.elementName}]");
+                currentOverlappedElement.StartOverlapScaleFromOther();
+            }
+            
+            // 更新記錄的重疊元素
+            lastOverlappedElement = currentOverlappedElement;
+        }
+    }
+    
+    /// <summary>
+    /// 開始重疊縮放效果
+    /// </summary>
+    private void StartOverlapScale()
+    {
+        if (isDragging) // 只有在拖拽時才進行縮放
+        {
+            StartCoroutine(ScaleTo(originalScale * overlapScale, overlapFadeTime));
+        }
+    }
+    
+    /// <summary>
+    /// 結束重疊縮放效果
+    /// </summary>
+    private void EndOverlapScale()
+    {
+        if (isDragging) // 只有在拖拽時才進行縮放
+        {
+            StartCoroutine(ScaleTo(originalScale * dragScale, overlapFadeTime));
+        }
+    }
+    
+    /// <summary>
+    /// 被其他物件重疊時開始縮放效果
+    /// </summary>
+    public void StartOverlapScaleFromOther()
+    {
+        if (!isOverlapping)
+        {
+            isOverlapping = true;
+            StartCoroutine(ScaleTo(originalScale * overlapScale, overlapFadeTime));
+        }
+    }
+    
+    /// <summary>
+    /// 被其他物件重疊時結束縮放效果
+    /// </summary>
+    public void EndOverlapScaleFromOther()
+    {
+        if (isOverlapping)
+        {
+            isOverlapping = false;
+            StartCoroutine(ScaleTo(originalScale, overlapFadeTime));
         }
     }
     
@@ -261,6 +360,62 @@ public class ElementView : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndD
     public void SetOriginalPosition(Vector3 position)
     {
         originalPosition = position;
+    }
+    
+    /// <summary>
+    /// 設定元素名稱
+    /// </summary>
+    public void SetElementName(string name)
+    {
+        elementName = name;
+    }
+    
+    /// <summary>
+    /// 獲取元素名稱
+    /// </summary>
+    public string GetElementName()
+    {
+        return elementName;
+    }
+    
+    /// <summary>
+    /// 設定重疊縮放倍數
+    /// </summary>
+    public void SetOverlapScale(float scale)
+    {
+        overlapScale = scale;
+    }
+    
+    /// <summary>
+    /// 設定重疊縮放時間
+    /// </summary>
+    public void SetOverlapFadeTime(float fadeTime)
+    {
+        overlapFadeTime = fadeTime;
+    }
+    
+    /// <summary>
+    /// 手動觸發重疊縮放效果
+    /// </summary>
+    public void TriggerOverlapScale()
+    {
+        if (isDragging && !isOverlapping)
+        {
+            isOverlapping = true;
+            StartOverlapScale();
+        }
+    }
+    
+    /// <summary>
+    /// 手動結束重疊縮放效果
+    /// </summary>
+    public void EndOverlapScaleManually()
+    {
+        if (isOverlapping)
+        {
+            isOverlapping = false;
+            EndOverlapScale();
+        }
     }
     
     #endregion
