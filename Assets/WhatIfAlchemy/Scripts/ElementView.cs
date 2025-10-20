@@ -4,7 +4,7 @@ using UnityEngine.EventSystems;
 /// <summary>
 /// 元素視圖控制器，負責處理元素的拖拽和碰撞檢測
 /// </summary>
-public class ElementView : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHandler
+public class ElementView : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHandler, IPointerEnterHandler, IPointerExitHandler
 {
     [Header("拖拽設定")]
     [SerializeField] private bool canDrag = true;
@@ -17,6 +17,8 @@ public class ElementView : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndD
     [Header("視覺回饋")]
     [SerializeField] private float dragScale = 1.1f;
     [SerializeField] private Color dragColor = Color.white;
+    [SerializeField] private float hoverScale = 1.05f;
+    [SerializeField] private float hoverFadeTime = 0.2f;
     
     // 私有變數
     private Vector3 originalPosition;
@@ -25,7 +27,11 @@ public class ElementView : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndD
     private Camera mainCamera;
     private SpriteRenderer spriteRenderer;
     private bool isDragging = false;
+    private bool isHovering = false;
     private Collider2D[] collidersInRange;
+    private Vector3 dragOffset;
+    private int originalSortingOrder;
+    private static int globalSortingOrder = 1000; // 全域排序層級計數器
     
     // 事件
     public System.Action<ElementView, ElementView> OnElementCollision;
@@ -50,6 +56,7 @@ public class ElementView : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndD
         if (spriteRenderer != null)
         {
             originalColor = spriteRenderer.color;
+            originalSortingOrder = spriteRenderer.sortingOrder;
         }
     }
     
@@ -75,21 +82,22 @@ public class ElementView : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndD
         
         isDragging = true;
         
+        // 計算拖拽偏移，讓物件保持在滑鼠點擊的相對位置
+        Vector3 screenPosition = eventData.position;
+        screenPosition.z = mainCamera.WorldToScreenPoint(transform.position).z;
+        Vector3 worldPosition = mainCamera.ScreenToWorldPoint(screenPosition);
+        dragOffset = transform.position - worldPosition;
+        
         // 視覺回饋
         if (spriteRenderer != null)
         {
             spriteRenderer.color = dragColor;
             transform.localScale = originalScale * dragScale;
+            spriteRenderer.sortingOrder = ++globalSortingOrder; // 拖拽時設定為最高排序層級
         }
         
         // 將物件移到最前面
         transform.SetAsLastSibling();
-        
-        // 立即更新位置到滑鼠位置，避免初始偏移
-        Vector3 screenPosition = eventData.position;
-        screenPosition.z = mainCamera.WorldToScreenPoint(transform.position).z;
-        Vector3 worldPosition = mainCamera.ScreenToWorldPoint(screenPosition);
-        transform.position = worldPosition;
     }
     
     /// <summary>
@@ -101,11 +109,11 @@ public class ElementView : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndD
         
         // 將滑鼠位置轉換為世界座標
         Vector3 screenPosition = eventData.position;
-        screenPosition.z = mainCamera.WorldToScreenPoint(transform.position).z; // 保持與攝影機的距離
+        screenPosition.z = mainCamera.WorldToScreenPoint(transform.position).z;
         Vector3 worldPosition = mainCamera.ScreenToWorldPoint(screenPosition);
         
-        // 直接設定位置，不使用平滑移動
-        transform.position = worldPosition;
+        // 應用拖拽偏移，讓物件保持在滑鼠點擊的相對位置
+        transform.position = worldPosition + dragOffset;
         
         // 檢測碰撞
         CheckForCollisions();
@@ -125,6 +133,8 @@ public class ElementView : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndD
         {
             spriteRenderer.color = originalColor;
             transform.localScale = originalScale;
+            // 保持最高排序層級，不恢復原始層級
+            spriteRenderer.sortingOrder = globalSortingOrder;
         }
         
         // 如果需要，返回原始位置
@@ -132,6 +142,51 @@ public class ElementView : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndD
         {
             transform.position = originalPosition;
         }
+    }
+    
+    #endregion
+    
+    #region Hover Effects
+    
+    /// <summary>
+    /// 滑鼠進入時調用
+    /// </summary>
+    public void OnPointerEnter(PointerEventData eventData)
+    {
+        if (isHovering || isDragging) return;
+        
+        isHovering = true;
+        StartCoroutine(ScaleTo(originalScale * hoverScale, hoverFadeTime));
+    }
+    
+    /// <summary>
+    /// 滑鼠離開時調用
+    /// </summary>
+    public void OnPointerExit(PointerEventData eventData)
+    {
+        if (!isHovering || isDragging) return;
+        
+        isHovering = false;
+        StartCoroutine(ScaleTo(originalScale, hoverFadeTime));
+    }
+    
+    /// <summary>
+    /// 縮放協程
+    /// </summary>
+    private System.Collections.IEnumerator ScaleTo(Vector3 targetScale, float duration)
+    {
+        Vector3 startScale = transform.localScale;
+        float elapsedTime = 0f;
+        
+        while (elapsedTime < duration)
+        {
+            elapsedTime += Time.deltaTime;
+            float t = elapsedTime / duration;
+            transform.localScale = Vector3.Lerp(startScale, targetScale, t);
+            yield return null;
+        }
+        
+        transform.localScale = targetScale;
     }
     
     #endregion
