@@ -10,6 +10,7 @@ public class ElementButtonController : MonoBehaviour, IPointerEnterHandler, IPoi
     [Header("UI 組件")]
     [SerializeField] private Button button;
     [SerializeField] private Image buttonImage;
+    [SerializeField] private CanvasGroup canvasGroup;
     
     [Header("懸停顯示設定")]
     [SerializeField] private GameObject hoverDisplayObject;
@@ -25,6 +26,10 @@ public class ElementButtonController : MonoBehaviour, IPointerEnterHandler, IPoi
     [SerializeField] private bool autoStartDrag = true;
     [SerializeField] private bool generateOnDrag = true;
     
+    [Header("拖拽視覺效果")]
+    [SerializeField] private float dragTransparency = 0.5f;
+    [SerializeField] private float dragFadeTime = 0.2f;
+    
     
     // 私有變數
     private Vector3 originalHoverScale;
@@ -33,6 +38,7 @@ public class ElementButtonController : MonoBehaviour, IPointerEnterHandler, IPoi
     private Camera mainCamera;
     private ElementView currentDraggedElement;
     private bool isDragging = false;
+    private float originalAlpha;
     
     // 事件
     public System.Action<ElementView> OnElementSpawned;
@@ -46,10 +52,18 @@ public class ElementButtonController : MonoBehaviour, IPointerEnterHandler, IPoi
             button = GetComponent<Button>();
         if (buttonImage == null)
             buttonImage = GetComponent<Image>();
+        if (canvasGroup == null)
+            canvasGroup = GetComponent<CanvasGroup>();
         
         mainCamera = Camera.main;
         if (mainCamera == null)
             mainCamera = FindObjectOfType<Camera>();
+        
+        // 儲存原始透明度
+        if (canvasGroup != null)
+        {
+            originalAlpha = canvasGroup.alpha;
+        }
         
         // 設定懸停顯示物件
         SetupHoverDisplay();
@@ -148,6 +162,13 @@ public class ElementButtonController : MonoBehaviour, IPointerEnterHandler, IPoi
         if (!generateOnDrag) return;
         
         isDragging = true;
+        
+        // 開始半透明效果
+        if (canvasGroup != null)
+        {
+            StartCoroutine(FadeCanvasGroup(canvasGroup, originalAlpha, dragTransparency, dragFadeTime));
+        }
+        
         currentDraggedElement = SpawnElementView(eventData);
     }
     
@@ -170,6 +191,12 @@ public class ElementButtonController : MonoBehaviour, IPointerEnterHandler, IPoi
         if (!isDragging || currentDraggedElement == null) return;
         
         isDragging = false;
+        
+        // 恢復透明度
+        if (canvasGroup != null)
+        {
+            StartCoroutine(FadeCanvasGroup(canvasGroup, dragTransparency, originalAlpha, dragFadeTime));
+        }
         
         // 將拖拽結束事件傳遞給生成的元素
         currentDraggedElement.OnEndDrag(eventData);
@@ -355,6 +382,22 @@ public class ElementButtonController : MonoBehaviour, IPointerEnterHandler, IPoi
             isHovering = false;
             HideHoverDisplay();
         }
+    }
+    
+    /// <summary>
+    /// 設定拖拽透明度
+    /// </summary>
+    public void SetDragTransparency(float transparency)
+    {
+        dragTransparency = Mathf.Clamp01(transparency);
+    }
+    
+    /// <summary>
+    /// 設定拖拽淡入淡出時間
+    /// </summary>
+    public void SetDragFadeTime(float fadeTime)
+    {
+        dragFadeTime = Mathf.Max(0f, fadeTime);
     }
     
     /// <summary>

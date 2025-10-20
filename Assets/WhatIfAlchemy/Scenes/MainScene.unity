@@ -2124,6 +2124,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ElementButtonController
   button: {fileID: 705520514}
   buttonImage: {fileID: 705520515}
+  canvasGroup: {fileID: 1150200694}
   hoverDisplayObject: {fileID: 1476730452}
   enableHoverDisplay: 1
   hoverOffset: {x: 0, y: 142.9, z: 0}
@@ -2134,7 +2135,8 @@ MonoBehaviour:
   spawnOffset: {x: 0, y: 0, z: 0}
   autoStartDrag: 1
   generateOnDrag: 1
-  spawnCooldown: 0.5
+  dragTransparency: 0.5
+  dragFadeTime: 0.2
 --- !u!1 &749588731
 GameObject:
   m_ObjectHideFlags: 0
@@ -2533,6 +2535,7 @@ GameObject:
   - component: {fileID: 1150200691}
   - component: {fileID: 1150200690}
   - component: {fileID: 1150200693}
+  - component: {fileID: 1150200694}
   m_Layer: 5
   m_Name: Scroll View
   m_TagString: Untagged
@@ -2644,6 +2647,18 @@ MonoBehaviour:
   m_EffectColor: {r: 0, g: 0, b: 0, a: 0.5}
   m_EffectDistance: {x: 1, y: -5}
   m_UseGraphicAlpha: 1
+--- !u!225 &1150200694
+CanvasGroup:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1150200688}
+  m_Enabled: 1
+  m_Alpha: 1
+  m_Interactable: 1
+  m_BlocksRaycasts: 1
+  m_IgnoreParentGroups: 0
 --- !u!1 &1168321283
 GameObject:
   m_ObjectHideFlags: 0
