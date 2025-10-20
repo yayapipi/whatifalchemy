@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.UI;
 
 /// <summary>
 /// 元素合併管理器，負責處理元素之間的合併邏輯
@@ -10,6 +11,11 @@ public class ElementMergeManager : MonoBehaviour
     [SerializeField] private GameObject mergedElementPrefab;
     [SerializeField] private string mergedElementName = "Merged Element";
     [SerializeField] private Sprite mergedElementSprite;
+    
+    [Header("UI 合併設定")]
+    [SerializeField] private bool enableUIButtonCreation = true;
+    [SerializeField] private GameObject elementButtonPrefab;
+    [SerializeField] private Transform scrollViewContent;
     
     // 靜態實例
     private static ElementMergeManager instance;
@@ -101,6 +107,39 @@ public class ElementMergeManager : MonoBehaviour
     }
     
     /// <summary>
+    /// 設定 UI 按鈕創建開關
+    /// </summary>
+    public static void SetEnableUIButtonCreation(bool enable)
+    {
+        if (Instance != null)
+        {
+            Instance.enableUIButtonCreation = enable;
+        }
+    }
+    
+    /// <summary>
+    /// 設定元素按鈕預製體
+    /// </summary>
+    public static void SetElementButtonPrefab(GameObject prefab)
+    {
+        if (Instance != null)
+        {
+            Instance.elementButtonPrefab = prefab;
+        }
+    }
+    
+    /// <summary>
+    /// 設定 ScrollView Content
+    /// </summary>
+    public static void SetScrollViewContent(Transform content)
+    {
+        if (Instance != null)
+        {
+            Instance.scrollViewContent = content;
+        }
+    }
+    
+    /// <summary>
     /// 檢查並處理元素合併
     /// </summary>
     public static bool TryMergeElements(ElementView draggedElement, ElementView targetElement)
@@ -147,6 +186,12 @@ public class ElementMergeManager : MonoBehaviour
         
         // 創建新的合併元素
         ElementView mergedElement = CreateMergedElement(mergePosition);
+        
+        // 創建 UI 按鈕（如果啟用）
+        if (enableUIButtonCreation)
+        {
+            CreateUIButton(mergedElement);
+        }
         
         // 摧毀兩個原始元素
         if (element1 != null)
@@ -198,6 +243,61 @@ public class ElementMergeManager : MonoBehaviour
     }
     
     /// <summary>
+    /// 創建 UI 按鈕
+    /// </summary>
+    private void CreateUIButton(ElementView mergedElement)
+    {
+        // 檢查是否有設定按鈕預製體
+        if (elementButtonPrefab == null)
+        {
+            Debug.LogWarning("[ElementMergeManager] 沒有設定 elementButtonPrefab，無法創建 UI 按鈕！");
+            return;
+        }
+        
+        // 檢查是否有設定 ScrollView Content
+        if (scrollViewContent == null)
+        {
+            Debug.LogWarning("[ElementMergeManager] 沒有設定 scrollViewContent，無法創建 UI 按鈕！");
+            return;
+        }
+        
+        // 創建按鈕物件
+        GameObject buttonObject = Instantiate(elementButtonPrefab, scrollViewContent);
+        
+        // 獲取 ElementButtonController 組件
+        ElementButtonController buttonController = buttonObject.GetComponent<ElementButtonController>();
+        if (buttonController != null)
+        {
+            // 初始化按鈕設定
+            InitializeButtonController(buttonController, mergedElement);
+            Debug.Log($"[ElementMergeManager] 在 ScrollView 中創建了按鈕: {mergedElementName}");
+        }
+        else
+        {
+            Debug.LogWarning("[ElementMergeManager] 按鈕預製體沒有 ElementButtonController 組件！");
+        }
+    }
+    
+    /// <summary>
+    /// 初始化按鈕控制器
+    /// </summary>
+    private void InitializeButtonController(ElementButtonController buttonController, ElementView mergedElement)
+    {
+        // 設定元素名稱
+        buttonController.SetElementName(mergedElementName);
+        
+        // 設定元素 Sprite
+        if (mergedElementSprite != null)
+        {
+            buttonController.SetElementSprite(mergedElementSprite);
+        }
+        
+        // 設定按鈕名稱
+        buttonController.gameObject.name = $"Button_{mergedElementName}";
+        buttonController.GetComponent<Image>().sprite = mergedElementSprite;
+    }
+    
+    /// <summary>
     /// 檢查兩個元素是否應該合併
     /// </summary>
     public static bool ShouldMerge(ElementView element1, ElementView element2)
@@ -222,7 +322,12 @@ public class ElementMergeManager : MonoBehaviour
             return "ElementMergeManager 實例不存在";
         }
         
-        return $"Merge Enabled: {Instance.enableMerge}, Prefab: {(Instance.mergedElementPrefab != null ? Instance.mergedElementPrefab.name : "None")}, Name: {Instance.mergedElementName}";
+        return $"Merge Enabled: {Instance.enableMerge}, " +
+               $"Prefab: {(Instance.mergedElementPrefab != null ? Instance.mergedElementPrefab.name : "None")}, " +
+               $"Name: {Instance.mergedElementName}, " +
+               $"UI Button Creation: {Instance.enableUIButtonCreation}, " +
+               $"Button Prefab: {(Instance.elementButtonPrefab != null ? Instance.elementButtonPrefab.name : "None")}, " +
+               $"ScrollView Content: {(Instance.scrollViewContent != null ? Instance.scrollViewContent.name : "None")}";
     }
     
     #endregion

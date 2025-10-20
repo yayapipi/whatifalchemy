@@ -333,7 +333,7 @@ GameObject:
   - component: {fileID: 215777366}
   - component: {fileID: 215777367}
   m_Layer: 0
-  m_Name: ElementManager
+  m_Name: ElementMergeManager
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -370,6 +370,9 @@ MonoBehaviour:
   mergedElementPrefab: {fileID: 8290114443475812414, guid: fd084f55ffdcc574e938f7f2031ce7eb, type: 3}
   mergedElementName: Steam
   mergedElementSprite: {fileID: 21300000, guid: cd07b87a63148bd4c9b5ebc6bcc11401, type: 3}
+  enableUIButtonCreation: 1
+  elementButtonPrefab: {fileID: 0}
+  scrollViewContent: {fileID: 0}
 --- !u!1 &237414919
 GameObject:
   m_ObjectHideFlags: 0
