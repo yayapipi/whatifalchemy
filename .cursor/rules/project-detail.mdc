@@ -1,0 +1,16 @@
+---
+description: 這款遊戲的開發背景資訊
+globs:
+alwaysApply: true
+---
+
+名字: WhatIf:Alchemy
+介紹: 
+
+- 一款類似 Little Alchemy 2 的遊戲，但是是 AI 版本
+- 可以拖拽兩個Element，合成新的Element
+- 如果出現資料庫沒出現過的 Element, 就會使用 Google AI生成新的元素
+- 生成新的元素之後會加入到資料庫，下次可以直接使用
+- 資料庫使用的是 Supabase
+
+根據我的指示慢慢的把功能實現
