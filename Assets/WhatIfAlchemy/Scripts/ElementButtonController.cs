@@ -423,6 +423,7 @@ public class ElementButtonController : MonoBehaviour, IPointerEnterHandler, IPoi
     public void SetElementSprite(Sprite sprite)
     {
         elementSprite = sprite;
+        buttonImage.sprite = sprite;
     }
     
     /// <summary>

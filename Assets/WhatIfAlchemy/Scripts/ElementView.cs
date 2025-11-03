@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.EventSystems;
+using WhatIfAlchemy.Scripts;
 
 /// <summary>
 /// 元素視圖控制器，負責處理元素的拖拽和碰撞檢測
