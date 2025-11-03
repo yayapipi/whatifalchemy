@@ -15,10 +15,6 @@ namespace PolarAI.Scripts.AICore.FalAI.NanoBanana
         
         private FalAICore FalAICore = new FalAICore();
 
-        private void Start()
-        {
-            FalAICore.Initialize(FalApiKey);
-        }
         
         public void SetAPIKey(string apiKey)
         {

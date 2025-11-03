@@ -14,11 +14,6 @@ namespace PolarAI.Scripts.AICore.FalAI.RemBg
         
         private FalAICore FalAICore = new FalAICore();
 
-        private void Start()
-        {
-            FalAICore.Initialize(FalApiKey);
-        }
-        
         public void SetAPIKey(string apiKey)
         {
             FalApiKey = apiKey;

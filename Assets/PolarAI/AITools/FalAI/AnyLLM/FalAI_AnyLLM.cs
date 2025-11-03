@@ -25,14 +25,7 @@ namespace PolarAI.Scripts.AICore.FalAI.AnyLLM
 
         public string DefaultModel = "google/gemini-2.0-flash-001";
 
-        private FalAICore FalAICore;
-
-        private void Start()
-        {
-            FalAICore = new FalAICore();
-            FalAICore.Initialize(FalApiKey);
-            // RunAnyLLM("Give me 3 eerie quest ideas for a rogue-like dungeon crawler in chinese",null);
-        }
+        private FalAICore FalAICore = new FalAICore();
 
         public void SetAPIKey(string apiKey)
         {
