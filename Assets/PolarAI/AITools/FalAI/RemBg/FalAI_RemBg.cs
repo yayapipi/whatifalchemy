@@ -18,6 +18,12 @@ namespace PolarAI.Scripts.AICore.FalAI.RemBg
         {
             FalAICore.Initialize(FalApiKey);
         }
+        
+        public void SetAPIKey(string apiKey)
+        {
+            FalApiKey = apiKey;
+            FalAICore.Initialize(FalApiKey);
+        }
 
         public void RemoveBg(string imageUrl, Action<string> onCompleteUrl)
         {

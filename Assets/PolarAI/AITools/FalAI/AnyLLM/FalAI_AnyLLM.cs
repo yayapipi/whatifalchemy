@@ -34,6 +34,12 @@ namespace PolarAI.Scripts.AICore.FalAI.AnyLLM
             // RunAnyLLM("Give me 3 eerie quest ideas for a rogue-like dungeon crawler in chinese",null);
         }
 
+        public void SetAPIKey(string apiKey)
+        {
+            FalApiKey = apiKey;
+            FalAICore.Initialize(FalApiKey);
+        }
+
         public void RunAnyLLM(string prompt, Action<Dictionary<string, object>> onComplete,
             string model = null, bool reasoning = false, int maxToken = 300, float temperature = 0.7f)
         {

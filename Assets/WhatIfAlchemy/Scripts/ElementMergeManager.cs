@@ -6,6 +6,7 @@ using PolarAI.Scripts.AICore.FalAI.AnyLLM;
 using PolarAI.Scripts.AICore.FalAI.NanoBanana;
 using PolarAI.Scripts.AICore.FalAI.RemBg;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using YFrame.Runtime.Utility;
 
 namespace WhatIfAlchemy.Scripts
@@ -228,6 +229,47 @@ namespace WhatIfAlchemy.Scripts
             foreach (var elementName in ElementList)
             {
                 Instance.CreateUIButton(elementName);
+            }
+        }
+
+        public void RemoveAllSaveFile()
+        {
+            try
+            {
+                string savePath = Instance.SavePath;
+
+                if (string.IsNullOrEmpty(savePath))
+                {
+                    Debug.LogError("Save Path Is Empty");
+                    return;
+                }
+
+                if (!System.IO.Directory.Exists(savePath))
+                {
+                    Debug.LogWarning($"Save Directory Not Found: {savePath}");
+                    return;
+                }
+
+                string[] files = Directory.GetFiles(savePath);
+                foreach (string file in files)
+                {
+                    System.IO.File.Delete(file);
+                    Debug.Log($"Deleted File: {file}");
+                }
+
+                string[] directories = Directory.GetDirectories(savePath);
+                foreach (string directory in directories)
+                {
+                    System.IO.Directory.Delete(directory, true);
+                    Debug.Log($"Deleted Directory: {directory}");
+                }
+
+                Debug.Log($"All Save Files Removed From: {savePath}");
+                SceneManager.LoadScene(0);
+            }
+            catch (System.Exception e)
+            {
+                Debug.LogError($"Remove Save Files Error: {e.Message}");
             }
         }
     }

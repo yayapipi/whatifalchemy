@@ -19,7 +19,13 @@ namespace PolarAI.Scripts.AICore.FalAI.NanoBanana
         {
             FalAICore.Initialize(FalApiKey);
         }
-
+        
+        public void SetAPIKey(string apiKey)
+        {
+            FalApiKey = apiKey;
+            FalAICore.Initialize(FalApiKey);
+        }
+        
         public void GenImg(string prompt, Action<string,string> onCompleteUrl)
         {
             var body = new Dictionary<string, object>
