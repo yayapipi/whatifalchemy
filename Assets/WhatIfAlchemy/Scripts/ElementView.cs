@@ -25,8 +25,14 @@ public class ElementView : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndD
     [SerializeField] private float overlapScale = 1.2f;
     [SerializeField] private float overlapFadeTime = 0.3f;
     
+    [Header("UI設定")]
+    [SerializeField] private GameObject LoadingMask;
+    [SerializeField] public SpriteRenderer TargetSpriteRenderer;
+    [SerializeField] private Color LoadingSpriteColor;
+    [SerializeField] private Color TargetSpriteColor;
     
-    // 私有變數
+    
+    // Private Variable
     private Vector3 originalPosition;
     private Vector3 originalScale;
     private Color originalColor;
@@ -40,6 +46,8 @@ public class ElementView : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndD
     private static int globalSortingOrder = 1000; // 全域排序層級計數器
     private ElementView lastOverlappedElement; // 記錄上次重疊的元素
     private bool isOverlapping = false; // 是否正在重疊
+    private Collider2D ElementCollider;
+
     
     // 事件
     public System.Action<ElementView, ElementView> OnElementCollision;
@@ -50,6 +58,7 @@ public class ElementView : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndD
     {
         // 快取常用組件
         spriteRenderer = GetComponent<SpriteRenderer>();
+        ElementCollider = GetComponent<Collider2D>();
         mainCamera = Camera.main;
         
         // 如果沒有找到主攝影機，嘗試查找
@@ -78,6 +87,45 @@ public class ElementView : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndD
     }
     
     #endregion
+
+    public void UpdateGeneratedSprite(string newElementName, Sprite elementSprite)
+    {
+        elementName = newElementName; 
+        if (TargetSpriteRenderer != null)
+        {
+            TargetSpriteRenderer.sprite = elementSprite;
+            TargetSpriteRenderer.color = TargetSpriteColor;
+        }
+        
+        if (LoadingMask != null)
+        {
+            LoadingMask.SetActive(false);
+        }
+        
+        
+        // 移除現有的 Collider2D
+        if (ElementCollider != null)
+        {
+            DestroyImmediate(ElementCollider);
+        }
+        
+        ElementCollider = gameObject.AddComponent<PolygonCollider2D>();
+        transform.GetComponent<RectTransform>().pivot = new Vector2(0f, 0f);
+    }
+    
+    
+
+    public void SetLoadingState()
+    {
+        if (LoadingMask != null)
+        {
+            LoadingMask.SetActive(true);
+        }
+        if (TargetSpriteRenderer != null)
+        {
+            TargetSpriteRenderer.color = LoadingSpriteColor;
+        }
+    }
     
     #region Drag Interface Implementation
     
@@ -142,10 +190,7 @@ public class ElementView : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndD
         // 如果與其他元素重疊，嘗試合併
         if (overlappedElement != null)
         {
-            if (ElementMergeManager.TryMergeElements(this, overlappedElement))
-            {
-                return; // 合併成功，直接返回
-            }
+            ElementMergeManager.MergeElement(this, overlappedElement);
         }
         
         // 重置重疊狀態，並恢復被重疊物件的縮放
@@ -351,7 +396,10 @@ public class ElementView : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndD
         if (isOverlapping)
         {
             isOverlapping = false;
-            StartCoroutine(ScaleTo(originalScale, overlapFadeTime));
+            if (gameObject.activeSelf)
+            {
+                StartCoroutine(ScaleTo(originalScale, overlapFadeTime));
+            }
         }
     }
     
