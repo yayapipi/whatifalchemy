@@ -11,10 +11,8 @@ public class ElementView : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndD
     
     [Header("拖拽設定")]
     [SerializeField] private bool canDrag = true;
-    [SerializeField] private bool returnToOriginalPosition = false;
     
     [Header("碰撞檢測")]
-    [SerializeField] private float collisionRadius = 1f;
     [SerializeField] private LayerMask collisionLayerMask = -1;
     
     [Header("視覺回饋")]
@@ -42,7 +40,6 @@ public class ElementView : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndD
     private bool isHovering = false;
     private Collider2D[] collidersInRange;
     private Vector3 dragOffset;
-    private int originalSortingOrder;
     private static int globalSortingOrder = 1000; // 全域排序層級計數器
     private ElementView lastOverlappedElement; // 記錄上次重疊的元素
     private bool isOverlapping = false; // 是否正在重疊
@@ -73,13 +70,11 @@ public class ElementView : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndD
         if (spriteRenderer != null)
         {
             originalColor = spriteRenderer.color;
-            originalSortingOrder = spriteRenderer.sortingOrder;
         }
     }
     
     private void Start()
     {
-        // 確保有 SpriteRenderer 組件
         if (spriteRenderer == null)
         {
             Debug.LogWarning($"ElementView on {gameObject.name} 缺少 SpriteRenderer 組件！");
@@ -109,8 +104,10 @@ public class ElementView : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndD
             DestroyImmediate(ElementCollider);
         }
         
-        ElementCollider = gameObject.AddComponent<PolygonCollider2D>();
-        transform.GetComponent<RectTransform>().pivot = new Vector2(0f, 0f);
+        var polygonCollider2D = gameObject.AddComponent<PolygonCollider2D>();
+        polygonCollider2D.useDelaunayMesh = true;
+        ElementCollider = polygonCollider2D;
+        name = elementName;
     }
     
     
@@ -213,12 +210,6 @@ public class ElementView : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndD
             // 保持最高排序層級，不恢復原始層級
             spriteRenderer.sortingOrder = globalSortingOrder;
         }
-        
-        // 如果需要，返回原始位置
-        if (returnToOriginalPosition)
-        {
-            transform.position = originalPosition;
-        }
     }
     
     #endregion
@@ -275,8 +266,14 @@ public class ElementView : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndD
     /// </summary>
     private ElementView CheckForOverlapOnEndDrag()
     {
-        // 使用 OverlapCircle 檢測範圍內的碰撞體
-        Collider2D[] collidersInRange = Physics2D.OverlapCircleAll(transform.position, collisionRadius, collisionLayerMask);
+        // 使用 ElementCollider 的邊界來檢測碰撞
+        if (ElementCollider == null) return null;
+
+        Collider2D[] collidersInRange = Physics2D.OverlapAreaAll(
+            ElementCollider.bounds.min, 
+            ElementCollider.bounds.max, 
+            collisionLayerMask
+        );
         
         foreach (Collider2D collider in collidersInRange)
         {
@@ -299,8 +296,14 @@ public class ElementView : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndD
     /// </summary>
     private void CheckForCollisions()
     {
-        // 使用 OverlapCircle 檢測範圍內的碰撞體
-        collidersInRange = Physics2D.OverlapCircleAll(transform.position, collisionRadius, collisionLayerMask);
+        // 使用 ElementCollider 的邊界來檢測碰撞
+        if (ElementCollider == null) return;
+
+        collidersInRange = Physics2D.OverlapAreaAll(
+            ElementCollider.bounds.min, 
+            ElementCollider.bounds.max, 
+            collisionLayerMask
+        );
         
         ElementView currentOverlappedElement = null;
         
@@ -424,14 +427,6 @@ public class ElementView : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndD
     }
     
     /// <summary>
-    /// 設定碰撞半徑
-    /// </summary>
-    public void SetCollisionRadius(float radius)
-    {
-        collisionRadius = radius;
-    }
-    
-    /// <summary>
     /// 重置到原始位置
     /// </summary>
     public void ResetToOriginalPosition()
@@ -512,8 +507,11 @@ public class ElementView : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndD
     /// </summary>
     private void OnDrawGizmosSelected()
     {
-        Gizmos.color = Color.yellow;
-        Gizmos.DrawWireSphere(transform.position, collisionRadius);
+        if (ElementCollider != null)
+        {
+            Gizmos.color = Color.yellow;
+            Gizmos.DrawWireCube(ElementCollider.bounds.center, ElementCollider.bounds.size);
+        }
     }
     
     #endregion

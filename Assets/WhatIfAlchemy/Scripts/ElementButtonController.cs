@@ -305,8 +305,7 @@ public class ElementButtonController : MonoBehaviour, IPointerEnterHandler, IPoi
             return null;
         }
         
-        // 初始化 ElementView 的 Sprite 和 ElementName
-        InitializeElementView(elementView);
+        elementView.UpdateGeneratedSprite(elementName, elementSprite);
         
         // 自動開始拖拽
         if (autoStartDrag)
@@ -321,32 +320,6 @@ public class ElementButtonController : MonoBehaviour, IPointerEnterHandler, IPoi
         return elementView;
     }
     
-    /// <summary>
-    /// 初始化 ElementView 的 Sprite 和 ElementName
-    /// </summary>
-    private void InitializeElementView(ElementView elementView)
-    {
-        // 設定元素名稱
-        elementView.SetElementName(elementName);
-        
-        // 設定 Sprite
-        if (elementSprite != null)
-        {
-            SpriteRenderer spriteRenderer = elementView.GetComponent<SpriteRenderer>();
-            if (spriteRenderer != null)
-            {
-                spriteRenderer.sprite = elementSprite;
-            }
-            else
-            {
-                Debug.LogWarning($"ElementView {elementView.name} 沒有 SpriteRenderer 組件，無法設定 Sprite！");
-            }
-        }
-        else
-        {
-            Debug.LogWarning("沒有設定 elementSprite，使用預設 Sprite");
-        }
-    }
     
     /// <summary>
     /// 計算生成位置（滑鼠位置）

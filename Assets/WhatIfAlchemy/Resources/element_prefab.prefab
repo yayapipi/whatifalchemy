@@ -229,7 +229,7 @@ PolygonCollider2D:
   m_Offset: {x: 0, y: 0}
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
-    pivot: {x: 0.5, y: 0.5}
+    pivot: {x: 0, y: 0}
     oldSize: {x: 10.24, y: 10.24}
     newSize: {x: 10.24, y: 10.24}
     adaptiveTilingThreshold: 0.5
@@ -238,44 +238,44 @@ PolygonCollider2D:
   m_AutoTiling: 0
   m_Points:
     m_Paths:
-    - - {x: 0.91999996, y: -0.48}
-      - {x: 1.03, y: -0.35999998}
-      - {x: 1.0799999, y: -0.29999998}
-      - {x: 1.12, y: -0.21}
-      - {x: 1.15, y: -0.12}
-      - {x: 1.17, y: 0.01}
-      - {x: 1.17, y: 0.19}
-      - {x: 1.15, y: 0.34}
-      - {x: 1.12, y: 0.42999998}
-      - {x: 1, y: 0.64}
-      - {x: 0.88, y: 0.77}
-      - {x: 0.71999997, y: 0.89}
-      - {x: 0.44, y: 1.02}
-      - {x: 0.21, y: 1.05}
-      - {x: -0.17, y: 1.05}
-      - {x: -0.25, y: 1.04}
-      - {x: -0.42, y: 1}
-      - {x: -0.59, y: 0.95}
-      - {x: -0.69, y: 0.89}
-      - {x: -0.79999995, y: 0.82}
-      - {x: -0.93, y: 0.7}
-      - {x: -1.04, y: 0.55}
-      - {x: -1.11, y: 0.39}
-      - {x: -1.15, y: 0.29999998}
-      - {x: -1.16, y: 0.17}
-      - {x: -1.16, y: -0.049999997}
-      - {x: -1.15, y: -0.12}
-      - {x: -1.06, y: -0.31}
-      - {x: -1.02, y: -0.37}
-      - {x: -0.87, y: -0.51}
-      - {x: -0.75, y: -0.58}
-      - {x: -0.53999996, y: -0.64}
-      - {x: -0.17999999, y: -0.68}
-      - {x: 0.34, y: -0.68}
-      - {x: 0.59999996, y: -0.64}
-      - {x: 0.71999997, y: -0.59999996}
-      - {x: 0.85999995, y: -0.53}
-  m_UseDelaunayMesh: 0
+    - - {x: 6.04, y: 4.64}
+      - {x: 6.15, y: 4.7599998}
+      - {x: 6.2, y: 4.8199997}
+      - {x: 6.24, y: 4.91}
+      - {x: 6.27, y: 5}
+      - {x: 6.29, y: 5.13}
+      - {x: 6.29, y: 5.31}
+      - {x: 6.27, y: 5.46}
+      - {x: 6.24, y: 5.5499997}
+      - {x: 6.12, y: 5.7599998}
+      - {x: 6, y: 5.89}
+      - {x: 5.8399997, y: 6.0099998}
+      - {x: 5.56, y: 6.14}
+      - {x: 5.33, y: 6.17}
+      - {x: 4.95, y: 6.17}
+      - {x: 4.87, y: 6.16}
+      - {x: 4.7, y: 6.12}
+      - {x: 4.5299997, y: 6.0699997}
+      - {x: 4.43, y: 6.0099998}
+      - {x: 4.3199997, y: 5.94}
+      - {x: 4.19, y: 5.8199997}
+      - {x: 4.08, y: 5.67}
+      - {x: 4.0099998, y: 5.5099998}
+      - {x: 3.97, y: 5.42}
+      - {x: 3.9599998, y: 5.29}
+      - {x: 3.9599998, y: 5.0699997}
+      - {x: 3.97, y: 5}
+      - {x: 4.06, y: 4.81}
+      - {x: 4.1, y: 4.75}
+      - {x: 4.25, y: 4.61}
+      - {x: 4.37, y: 4.54}
+      - {x: 4.58, y: 4.48}
+      - {x: 4.94, y: 4.44}
+      - {x: 5.46, y: 4.44}
+      - {x: 5.72, y: 4.48}
+      - {x: 5.8399997, y: 4.52}
+      - {x: 5.98, y: 4.5899997}
+  m_UseDelaunayMesh: 1
 --- !u!331 &8139236162729064716
 SpriteMask:
   m_ObjectHideFlags: 0
@@ -324,7 +324,7 @@ SpriteMask:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_Sprite: {fileID: 21300000, guid: 287f0a86d4c7cc04d9b317306bf24f79, type: 3}
-  m_MaskAlphaCutoff: 0.2
+  m_MaskAlphaCutoff: 0.213
   m_FrontSortingLayerID: 0
   m_BackSortingLayerID: 0
   m_FrontSortingLayer: 0
@@ -332,7 +332,7 @@ SpriteMask:
   m_FrontSortingOrder: 0
   m_BackSortingOrder: 0
   m_IsCustomRangeActive: 0
-  m_SpriteSortPoint: 0
+  m_SpriteSortPoint: 1
   m_MaskSource: 0
 --- !u!114 &5702011694868853249
 MonoBehaviour:
@@ -348,8 +348,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ElementView
   elementName: Unknown Element
   canDrag: 1
-  returnToOriginalPosition: 0
-  collisionRadius: 1
   collisionLayerMask:
     serializedVersion: 2
     m_Bits: 4294967295
@@ -567,7 +565,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!224 &5913625508157901992
 RectTransform:
   m_ObjectHideFlags: 0
@@ -588,7 +586,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -3.09, y: 0.0000047683716}
+  m_AnchoredPosition: {x: 1.9597, y: 4.88}
   m_SizeDelta: {x: 3.9194999, y: 20}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!95 &4031775187154080617
