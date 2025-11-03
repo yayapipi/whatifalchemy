@@ -519,11 +519,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fe210b6e947d15142bbb28bd7d581e2e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ElementManager
-  enableMerge: 1
   mergedElementPrefab: {fileID: 1791724937214533522, guid: 64e1206cdee519c4a8cea01af5fa4433, type: 3}
-  mergedElementName: Steam
-  mergedElementSprite: {fileID: 21300000, guid: cd07b87a63148bd4c9b5ebc6bcc11401, type: 3}
-  enableUIButtonCreation: 1
   elementButtonPrefab: {fileID: 705520512}
   scrollViewContent: {fileID: 55931003}
   AnyLLMAI: {fileID: 1804463123}
@@ -531,6 +527,9 @@ MonoBehaviour:
   RemBgAI: {fileID: 1804463121}
   AddRefImg: 0
   imageRefUrls: []
+  SavePath: AlchemyStorage/
+  LoadGameOnStart: 1
+  ElementList: []
 --- !u!1 &237414919
 GameObject:
   m_ObjectHideFlags: 0
@@ -3156,6 +3155,10 @@ PrefabInstance:
     - target: {fileID: 1791724937214533522, guid: 64e1206cdee519c4a8cea01af5fa4433, type: 3}
       propertyPath: m_Name
       value: element_prefab
+      objectReference: {fileID: 0}
+    - target: {fileID: 1791724937214533522, guid: 64e1206cdee519c4a8cea01af5fa4433, type: 3}
+      propertyPath: m_IsActive
+      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections;
+using System.IO;
 using Core;
 using UnityEngine;
 using UnityEngine.Networking;
@@ -65,5 +66,69 @@ namespace YFrame.Runtime.Utility
                 onImageDownloaded?.Invoke(null);
             }
         }
+        
+        public static bool SaveImage(byte[] imageData, string filePath)
+        {
+            var directory = Path.GetDirectoryName(filePath);
+            try
+            {
+                if (imageData == null || imageData.Length == 0)
+                {
+                    Debug.LogError("Image Data Is Empty");
+                    return false;
+                }
+
+                if (!string.IsNullOrEmpty(directory) && !Directory.Exists(directory))
+                {
+                    Directory.CreateDirectory(directory);
+                }
+
+                File.WriteAllBytes(filePath, imageData);
+                Debug.Log($"Image Saved: {filePath}");
+                return true;
+            }
+            catch (Exception e)
+            {
+                Debug.LogError($"Save Image Error: {e.Message}");
+                return false;
+            }
+        }
+
+        public static byte[] LoadImage(string filePath)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(filePath))
+                {
+                    Debug.LogError("File Path Is Empty");
+                    return null;
+                }
+
+                if (!File.Exists(filePath))
+                {
+                    Debug.LogError($"File Not Found: {filePath}");
+                    return null;
+                }
+
+                byte[] imageData = File.ReadAllBytes(filePath);
+                
+                if (imageData.Length > 0)
+                {
+                    Debug.Log($"Image Data Loaded: {filePath} ({imageData.Length} bytes)");
+                }
+                else
+                {
+                    Debug.LogError($"Image Data Is Empty: {filePath}");
+                }
+
+                return imageData;
+            }
+            catch (Exception e)
+            {
+                Debug.LogError($"Load Image Data Error: {e.Message}");
+                return null;
+            }
+        }
+        
     }
 }

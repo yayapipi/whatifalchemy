@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using Newtonsoft.Json;
 using PolarAI.Scripts.AICore.FalAI.AnyLLM;
 using PolarAI.Scripts.AICore.FalAI.NanoBanana;
@@ -19,42 +20,39 @@ namespace WhatIfAlchemy.Scripts
         public FalAI_NanoBanana NanoBananaAI;
         public FalAI_RemBg RemBgAI;
 
-        [Header("Generate Style")] public bool AddRefImg;
+        [Header("Generate Style")] 
+        public bool AddRefImg;
         public List<Sprite> imageRefUrls;
 
-        private static ElementMergeManager instance;
-
-        public static ElementMergeManager Instance
-        {
-            get
-            {
-                if (instance == null)
-                {
-                    instance = FindObjectOfType<ElementMergeManager>();
-                    if (instance == null)
-                    {
-                        Debug.LogError(
-                            "ElementMergeManager: 找不到 ElementMergeManager 實例！請確保場景中有一個 ElementMergeManager。");
-                    }
-                }
-
-                return instance;
-            }
-        }
+        [Header("Save Config")]
+        public string SavePath;
+        public bool LoadGameOnStart;
+        
+        public static ElementMergeManager Instance;
+        
+        public List<string> ElementList = new List<string>();
+        private Dictionary<string, string> MergeMappingDic = new Dictionary<string, string>();
+        
+        private Dictionary<string, ElementView> ElementObjDic = new Dictionary<string, ElementView>();
 
         private void Awake()
         {
-            if (instance == null)
+            if (Instance == null)
             {
-                instance = this;
-                DontDestroyOnLoad(gameObject);
+                Instance = this;
             }
-            else if (instance != this)
-            {
-                Destroy(gameObject);
-            }
+            
+            SavePath = Path.Combine(Application.persistentDataPath, SavePath);
         }
 
+        private void Start()
+        {
+            if (LoadGameOnStart)
+            {
+                LoadElementList();
+                BuildElementList();
+            }
+        }
 
         public static void MergeElement(ElementView draggedElement, ElementView targetElement)
         {
@@ -76,19 +74,43 @@ namespace WhatIfAlchemy.Scripts
             var newElement = Instance.CreateMergedElement(mergePosition);
             draggedElement.gameObject.SetActive(false);
             targetElement.gameObject.SetActive(false);
-
+            
+            var matchResult = Instance.TrpMappingElement(draggedElement.GetElementName(), targetElement.GetElementName());
+            if (!string.IsNullOrEmpty(matchResult))
+            {
+                newElement.UpdateGeneratedSprite(matchResult,
+                    SpritesUtility.LoadImage(Instance.SavePath +  $"/img/{matchResult}.png").ToSprite());
+                return;
+            }
+     
             Instance.CombinationPrompt(draggedElement.GetElementName(), targetElement.GetElementName(), (newName) =>
             {
                 Instance.GenerateNewElementImage(newName, imgUrls, true, (newSprite) =>
                 {
                     // update new result;
                     newElement.UpdateGeneratedSprite(newName, newSprite);
-                    ;
                     Instance.CreateUIButton(newElement);
+                    SpritesUtility.SaveImage(newSprite.ToBytes(), Instance.SavePath + $"/img/{newName}.png");
+                    Instance.MergeMappingDic.Add(draggedElement.GetElementName() + "+" + targetElement.GetElementName(), 
+                        newName);
+                    Instance.ElementList.Add(newName);
+                    Instance.SaveElementList();
                     Destroy(draggedElement.gameObject);
                     Destroy(targetElement.gameObject);
                 });
             });
+        }
+
+        private string TrpMappingElement(string name1, string name2)
+        {
+            var mapName = $"{name1}+{name2}";
+            if (Instance.MergeMappingDic.TryGetValue(mapName, out var matchName))
+            {
+                return matchName;
+            }
+            
+            var mapNameRev = $"{name2}+{name1}";
+            return Instance.MergeMappingDic.GetValueOrDefault(mapNameRev);
         }
 
         private void CombinationPrompt(string name1, string name2, Action<string> onComplete)
@@ -161,6 +183,52 @@ namespace WhatIfAlchemy.Scripts
             buttonController.SetElementName(mergedElement.GetElementName());
             buttonController.SetElementSprite(mergedElement.TargetSpriteRenderer.sprite);
             buttonController.gameObject.name = $"{mergedElement.GetElementName()}Btn";
+        }
+        
+        private void CreateUIButton(string elementName)
+        {
+            var buttonObject = Instantiate(elementButtonPrefab, scrollViewContent);
+            var buttonController = buttonObject.GetComponent<ElementButtonController>();
+            buttonController.SetElementName(elementName);
+            buttonController.SetElementSprite(SpritesUtility.LoadImage(SavePath +  $"/img/{elementName}.png").ToSprite());
+            buttonController.gameObject.name = $"{elementName}Btn";
+        }
+
+
+        private void SaveElementList()
+        {
+            var json = JsonConvert.SerializeObject(ElementList);
+            System.IO.File.WriteAllText(SavePath + "/ElementList.json", json);
+            
+            var jsonMergeMapping = JsonConvert.SerializeObject(MergeMappingDic);
+            System.IO.File.WriteAllText(SavePath + "/MergeMapping.json", jsonMergeMapping);
+        }
+
+        private void LoadElementList()
+        {
+            if (!System.IO.File.Exists(SavePath + "/ElementList.json"))
+            {
+                return;
+            }
+            
+            var json = System.IO.File.ReadAllText(SavePath + "/ElementList.json");
+            ElementList = JsonConvert.DeserializeObject<List<string>>(json);
+            
+            if (!System.IO.File.Exists(SavePath + "/MergeMapping.json"))
+            {
+                return;
+            }
+            
+            var jsonMergeMapping = System.IO.File.ReadAllText(SavePath + "/MergeMapping.json");
+            MergeMappingDic = JsonConvert.DeserializeObject<Dictionary<string, string>>(jsonMergeMapping);
+        }
+
+        private void BuildElementList()
+        {
+            foreach (var elementName in ElementList)
+            {
+                Instance.CreateUIButton(elementName);
+            }
         }
     }
 }
