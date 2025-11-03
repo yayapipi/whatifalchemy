@@ -18,7 +18,6 @@ public class ElementView : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndD
     
     [Header("視覺回饋")]
     [SerializeField] private float dragScale = 1.1f;
-    [SerializeField] private Color dragColor = Color.white;
     [SerializeField] private float hoverScale = 1.05f;
     [SerializeField] private float hoverFadeTime = 0.2f;
     [SerializeField] private float overlapScale = 1.2f;
@@ -34,7 +33,6 @@ public class ElementView : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndD
     // Private Variable
     private Vector3 originalPosition;
     private Vector3 originalScale;
-    private Color originalColor;
     private Camera mainCamera;
     private SpriteRenderer spriteRenderer;
     private bool isDragging = false;
@@ -68,10 +66,7 @@ public class ElementView : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndD
         // 儲存原始狀態
         originalPosition = transform.position;
         originalScale = transform.localScale;
-        if (spriteRenderer != null)
-        {
-            originalColor = spriteRenderer.color;
-        }
+
     }
     
     private void Start()
@@ -145,7 +140,6 @@ public class ElementView : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndD
         // 視覺回饋
         if (spriteRenderer != null)
         {
-            spriteRenderer.color = dragColor;
             transform.localScale = originalScale * dragScale;
             spriteRenderer.sortingOrder = ++globalSortingOrder; // 拖拽時設定為最高排序層級
         }
@@ -206,9 +200,7 @@ public class ElementView : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndD
         // 恢復視覺狀態
         if (spriteRenderer != null)
         {
-            spriteRenderer.color = originalColor;
             transform.localScale = originalScale;
-            // 保持最高排序層級，不恢復原始層級
             spriteRenderer.sortingOrder = globalSortingOrder;
         }
     }
